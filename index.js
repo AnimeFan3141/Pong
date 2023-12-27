@@ -4,8 +4,8 @@ let ball = document.querySelector(".ball");
 let paddle_1 = document.querySelector(".player_1");
 let paddle_2 = document.querySelector(".player_2");
 let offsetRight, offsetBottom;
-let paddleSpeed = paddle_1.offsetHeight / 3;
-let interval;
+let paddleSpeed = paddle_1.offsetHeight / 6;
+let ballMove;
 let reset = false;
 
 let dx = Math.trunc(Math.random() * 3) + 2;
@@ -15,11 +15,17 @@ let ydir = Math.trunc(Math.random() * 2);
 
 console.log(dx + " " + dy + " " + xdir + " " + ydir);
 
-document.addEventListener('keydown', (e) => {
-    if(e.key == 'Enter'){
+let keyPressed = {};
+
+onkeydown = onkeyup = function(e){
+    keyPressed[e.key] = e.type == 'keydown';
+}
+
+function gameLoop() {
+    if(keyPressed['Enter']){
         if(gamestate == 'start'){
             gamestate = 'play';
-            interval = setInterval(function() {
+            ballMove = setInterval(function() {
                 //Collision code
                 offsetRight = board.offsetWidth - ball.offsetLeft - ball.offsetWidth;
                 offsetBottom = board.offsetHeight - ball.offsetTop - ball.offsetHeight;
@@ -59,26 +65,29 @@ document.addEventListener('keydown', (e) => {
                     ball.style.top = ball.offsetTop + dx + "px";
                 }
                 if(reset == true){
-                    clearInterval(interval);
                     reset = false;
+                    clearInterval(ballMove);
                 }
             }, 10);
         }
     }
     if(gamestate == 'play'){
-        if(e.key == 'w' && paddle_1.offsetTop > 0){
+        if(keyPressed['w'] && !keyPressed['s'] && paddle_1.offsetTop > 0){
             paddle_1.style.top = paddle_1.offsetTop - paddleSpeed + "px";
         }
-        if(e.key == 's' && paddle_1.offsetTop + paddle_1.offsetHeight + ball.offsetHeight / 2 < board.offsetHeight){
+        if(keyPressed['s'] && !keyPressed['w'] && paddle_1.offsetTop + paddle_1.offsetHeight + ball.offsetHeight / 2 < board.offsetHeight){
             paddle_1.style.top = paddle_1.offsetTop + paddleSpeed + "px";
         }
 
-        if(e.key == 'ArrowUp' && paddle_2.offsetTop > 0){
+        if(keyPressed['ArrowUp'] && !keyPressed['ArrowDown'] && paddle_2.offsetTop > 0){
             paddle_2.style.top = paddle_2.offsetTop - paddleSpeed + "px";
         }
-        if(e.key == 'ArrowDown' && paddle_2.offsetTop + paddle_2.offsetHeight + ball.offsetHeight / 2 < board.offsetHeight){
+        if(keyPressed['ArrowDown'] && !keyPressed['ArrowUp'] && paddle_2.offsetTop + paddle_2.offsetHeight + ball.offsetHeight / 2 < board.offsetHeight){
             paddle_2.style.top = paddle_2.offsetTop + paddleSpeed + "px";
         }
     }
-    
-});
+
+    setTimeout(gameLoop, 10);
+}
+
+gameLoop();
